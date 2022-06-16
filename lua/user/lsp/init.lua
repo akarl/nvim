@@ -1,27 +1,8 @@
-local cmp = require("cmp")
-local lsp_installer = require("nvim-lsp-installer")
-local null_ls = require("null-ls")
--- local lspconfig = require('lspconfig')
-
 vim.diagnostic.config({
 	virtual_text = false,
 })
 
-local function on_attach(client)
-	if client.name == "gopls" then
-		client.resolved_capabilities.document_range_formatting = false
-		client.resolved_capabilities.document_formatting = false
-	end
-
-	if client.resolved_capabilities.document_formatting then
-		vim.cmd([[
-        augroup LspFormatting
-            autocmd! * <buffer>
-            autocmd BufWritePre <buffer> lua vim.lsp.buf.formatting_sync()
-        augroup END
-        ]])
-	end
-end
+local cmp = require("cmp")
 
 cmp.setup({
 	sources = cmp.config.sources({
@@ -30,9 +11,11 @@ cmp.setup({
 	}, {
 		{ name = "buffer" },
 	}),
-	completion = {
-		completeopt = "menu,menuone,noinsert",
+	window = {
+		-- completion = cmp.config.window.bordered(),
+		-- documentation = cmp.config.window.bordered(),
 	},
+	completion = {},
 	snippet = {
 		expand = function(args)
 			vim.fn["vsnip#anonymous"](args.body)
@@ -40,16 +23,23 @@ cmp.setup({
 	},
 	mapping = {
 		["<C-Space>"] = cmp.mapping(cmp.mapping.complete(), { "i", "c" }),
+		["<C-n>"] = cmp.mapping.select_next_item(),
+		["<C-p>"] = cmp.mapping.select_prev_item(),
+		["<C-d>"] = cmp.mapping.scroll_docs(4),
+		["<C-y>"] = cmp.mapping.scroll_docs(-4),
 		["<CR>"] = cmp.mapping.confirm({ select = true }),
 	},
 })
 
+local null_ls = require("null-ls")
+
 null_ls.setup({
-	debug = false,
-	on_attach = on_attach,
 	sources = {
 		-- Lua
 		null_ls.builtins.formatting.stylua,
+
+		-- Json
+		null_ls.builtins.diagnostics.jsonlint,
 
 		-- Go
 		null_ls.builtins.formatting.goimports.with({
@@ -58,27 +48,74 @@ null_ls.setup({
 		null_ls.builtins.formatting.gofumpt.with({
 			extra_args = { "-s", "-extra" },
 		}),
-		null_ls.builtins.diagnostics.golangci_lint,
 	},
 })
 
--- Register a handler that will be called for all installed servers.
--- Alternatively, you may also register handlers on specific server instances instead (see example below).
-lsp_installer.on_server_ready(function(server)
-	local opts = {
-		capabilities = require("cmp_nvim_lsp").update_capabilities(vim.lsp.protocol.make_client_capabilities()),
-		on_attach = on_attach,
-	}
+vim.api.nvim_create_autocmd("BufWritePre", {
+	callback = function()
+		pcall(function()
+			vim.lsp.buf.formatting_seq_sync({}, 5000)
+		end)
+	end,
+	group = vim.api.nvim_create_augroup("lsp_formatting", { clear = true }),
+	desc = "Formatting",
+})
 
-	local extra_opts = {}
+local au_group = vim.api.nvim_create_augroup("lsp_cursor_hold", { clear = true })
 
-	if server.name == "sumneko_lua" then
-		extra_opts = require("user.lsp.sumneko_lua")
-	end
+vim.api.nvim_create_autocmd({ "CursorHold" }, {
+	callback = function()
+		local notify = vim.notify
+		vim.notify = function(_, _) end
 
-	opts = vim.tbl_deep_extend("force", extra_opts, opts)
+		vim.lsp.buf.clear_references()
+		vim.lsp.buf.document_highlight()
+		vim.lsp.codelens.refresh()
 
-	-- This setup() function is exactly the same as lspconfig's setup function.
-	-- Refer to https://github.com/neovim/nvim-lspconfig/blob/master/doc/server_configurations.md
-	server:setup(opts)
-end)
+		vim.notify = notify
+	end,
+	group = au_group,
+	desc = "LSP stuff",
+})
+
+vim.api.nvim_create_autocmd({ "CursorHoldI" }, {
+	callback = function()
+		local notify = vim.notify
+		vim.notify = function(_, _) end
+
+		vim.lsp.buf.clear_references()
+		vim.lsp.buf.signature_help()
+
+		vim.notify = notify
+	end,
+	group = au_group,
+	desc = "LSP stuff",
+})
+
+-- Setup LSP Servers:
+local lsp_installer = require("nvim-lsp-installer")
+local lspconfig = require("lspconfig")
+
+lsp_installer.setup({
+	automatic_installation = true,
+})
+
+local capabilities = vim.lsp.protocol.make_client_capabilities()
+capabilities = require("cmp_nvim_lsp").update_capabilities(capabilities)
+
+lspconfig.sumneko_lua.setup(require("lua-dev").setup({}))
+
+lspconfig.gopls.setup({
+	capabilities = capabilities,
+})
+
+lspconfig.rust_analyzer.setup({
+	capabilities = capabilities,
+	settings = {
+		["rust-analyzer"] = {
+			checkOnSave = {
+				command = "clippy",
+			},
+		},
+	},
+})

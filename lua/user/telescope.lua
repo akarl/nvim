@@ -73,17 +73,10 @@ telescope.setup({
 				},
 			},
 		},
-		frecency = {
-			default_workspace = "CWD",
-			show_scores = false,
-			show_unindexed = true,
-			workspaces = {},
-		},
 	},
 })
 
 telescope.load_extension("file_browser")
-telescope.load_extension("frecency")
 
 vim.api.nvim_exec(
 	[[

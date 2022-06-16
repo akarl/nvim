@@ -1,5 +1,5 @@
-set foldmethod=expr
-set foldexpr=GolangFold(v:lnum)
+" set foldmethod=expr
+" set foldexpr=GolangFold(v:lnum)
 
 function! GolangFold(lnum)
 	let cur_line = getline(a:lnum)

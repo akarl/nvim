@@ -27,9 +27,14 @@ return require("packer").startup(function(use)
 	use("tpope/vim-eunuch")
 	use("tpope/vim-repeat")
 	use("tpope/vim-surround")
-
-	use("andersevenrud/nordic.nvim")
+	use("tpope/vim-vinegar")
+	-- use("andersevenrud/nordic.nvim")
+	-- use("projekt0n/github-nvim-theme")
 	use("folke/which-key.nvim")
+
+	use("rktjmp/lush.nvim")
+
+	use("~/workspace/nvim/uncolored")
 
 	use({
 		"nvim-telescope/telescope.nvim",
@@ -48,29 +53,56 @@ return require("packer").startup(function(use)
 	})
 
 	use({
-		"lewis6991/gitsigns.nvim",
+		"nvim-treesitter/playground",
 		requires = {
-			"nvim-lua/plenary.nvim",
+			"nvim-treesitter/nvim-treesitter",
 		},
 	})
 
 	use({
-		"hrsh7th/nvim-cmp",
+		"lewis6991/gitsigns.nvim",
+		requires = {
+			"nvim-lua/plenary.nvim",
+		},
+		config = function()
+			require("gitsigns").setup({
+				signcolumn = false,
+			})
+		end,
+	})
+
+	use({
+		"Junnplus/nvim-lsp-setup",
 		requires = {
 			"williamboman/nvim-lsp-installer",
+			"folke/lua-dev.nvim",
 			"neovim/nvim-lspconfig",
+			"hrsh7th/nvim-cmp",
 			"hrsh7th/cmp-nvim-lsp",
 			"hrsh7th/cmp-buffer",
 			"hrsh7th/cmp-path",
 			"hrsh7th/cmp-cmdline",
-			"hrsh7th/nvim-cmp",
 			"hrsh7th/cmp-vsnip",
 			"hrsh7th/vim-vsnip",
 		},
 	})
 
-	use("vim-test/vim-test")
-	use("kassio/neoterm")
+	use({
+		"rcarriga/neotest",
+		requires = {
+			"nvim-lua/plenary.nvim",
+			"nvim-treesitter/nvim-treesitter",
+			"antoinemadec/FixCursorHold.nvim",
+		},
+	})
+
+	use({
+		"vim-test/vim-test",
+		requires = {
+			"kassio/neoterm",
+			"jgdavey/tslime.vim",
+		},
+	})
 
 	use({
 		"jose-elias-alvarez/null-ls.nvim",

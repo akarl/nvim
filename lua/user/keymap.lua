@@ -1,3 +1,5 @@
+vim.api.nvim_set_var("mapleader", " ")
+
 local whichkey = require("which-key")
 
 whichkey.setup({
@@ -30,20 +32,11 @@ whichkey.setup({
 		["<tab>"] = "TAB",
 	},
 })
-vim.api.nvim_set_var("mapleader", " ")
 
 vim.api.nvim_exec(
 	[[
     tnoremap <esc> <C-\><C-n>
 
-    inoremap <C-q> <cmd>lua vim.lsp.buf.signature_help()<cr>
-    nnoremap <C-q> <cmd>lua vim.lsp.buf.hover()<cr>
-    nnoremap <C-e> <cmd>lua vim.diagnostic.open_float()<cr>
-
-    nnoremap <C-]> <cmd>Telescope lsp_definitions<cr>
-
-    nnoremap [e <cmd>lua vim.diagnostic.goto_prev()<cr>
-    nnoremap ]e <cmd>lua vim.diagnostic.goto_next()<cr>
 
     nnoremap ]q <cmd>cnext<cr>
     nnoremap [q <cmd>cprevious<cr>
@@ -51,19 +44,24 @@ vim.api.nvim_exec(
     nnoremap ]c <cmd>Gitsigns next_hunk<cr>
     nnoremap [c <cmd>Gitsigns prev_hunk<cr>
 
+    inoremap <C-q> <cmd>lua vim.lsp.buf.signature_help()<cr>
+    nnoremap <C-q> <cmd>lua vim.lsp.buf.hover()<cr>
+    nnoremap <C-e> <cmd>lua vim.diagnostic.open_float()<cr>
+    nnoremap <C-]> <cmd>lua vim.lsp.buf.definition()<cr>
+    nnoremap [e <cmd>lua vim.diagnostic.goto_prev()<cr>
+    nnoremap ]e <cmd>lua vim.diagnostic.goto_next()<cr>
     imap <expr> <Tab>   vsnip#jumpable(1)   ? '<Plug>(vsnip-jump-next)'      : '<Tab>'
     smap <expr> <Tab>   vsnip#jumpable(1)   ? '<Plug>(vsnip-jump-next)'      : '<Tab>'
     imap <expr> <S-Tab> vsnip#jumpable(-1)  ? '<Plug>(vsnip-jump-prev)'      : '<S-Tab>'
     smap <expr> <S-Tab> vsnip#jumpable(-1)  ? '<Plug>(vsnip-jump-prev)'      : '<S-Tab>'
 
-    nnoremap - <cmd>lua require 'telescope'.extensions.file_browser.file_browser({cwd='%:p:h'})<CR>
 ]],
 	false
 )
 
-whichkey.register({
-	["<leader>"] = { "<cmd>Telescope oldfiles include_current_session=true cwd_only=true<cr>", "find" },
+-- nnoremap - <cmd>lua require 'telescope'.extensions.file_browser.file_browser({cwd='%:h'})<CR>
 
+whichkey.register({
 	-- Packer
 	["p"] = { name = "+packer" },
 	["ps"] = { "<cmd>PackerSync<cr>", "sync" },
@@ -71,14 +69,16 @@ whichkey.register({
 
 	-- Files
 	["f"] = { name = "+file" },
-	["ff"] = { "<cmd>Telescope frecency theme=ivy<cr>", "find" },
+	-- ["ff"] = { "<cmd>Telescope find_files<cr>", "find" },
+	["ff"] = { ":find ", "find" },
 	["fD"] = { "<cmd>Delete<cr>", "delete-current" },
 	["fR"] = { "<cmd>Rename<cr>", "rename-current" },
 	["fM"] = { "<cmd>Move<cr>", "move-current" },
 
 	-- Buffers
 	["b"] = { name = "+buffer" },
-	["bl"] = { "<cmd>Telescope buffers<cr>", "list-buffers" },
+	["<leader>"] = { ":ls<cr>:b ", "list-buffers" },
+	["bl"] = { "<cmd>ls<cr>", "list-buffers" },
 	["bw"] = { "<cmd>bw!<cr>", "wipe-buffer" },
 
 	-- Tests
@@ -86,7 +86,6 @@ whichkey.register({
 	["tn"] = { "<cmd>TestNearest<cr>", "test-nearest" },
 	["tl"] = { "<cmd>TestLast<cr>", "test-last" },
 	["tS"] = { "<cmd>TestSuite<cr>", "test-suite" },
-	["tL"] = { "<cmd>GolangCILint<cr>", "lint-project" },
 
 	-- Debug
 	["d"] = { name = "+debugger" },
@@ -110,10 +109,16 @@ whichkey.register({
 	-- LSP
 	["l"] = { name = "+LSP" },
 	["lR"] = { "<cmd>lua vim.lsp.buf.rename()<cr>", "rename-var" },
-	["lr"] = { "<cmd>Telescope lsp_references<cr>", "references" },
-	["ld"] = { "<cmd>Telescope lsp_definitions<cr>", "definitions" },
-	["li"] = { "<cmd>Telescope lsp_implementations<cr>", "implementations" },
-	["la"] = { "<cmd>Telescope lsp_code_actions<cr>", "code-actions" },
+	["lr"] = { "<cmd>lua vim.lsp.buf.references()<cr>", "references" },
+	["li"] = { "<cmd>lua vim.lsp.buf.implementation()<cr>", "implementations" },
+	["la"] = { "<cmd>lua vim.lsp.buf.code_action()<cr>", "code-actions" },
+	["ls"] = { "<cmd>lua vim.lsp.buf.document_symbol()<cr>", "document-symbols" },
+	["lS"] = { "<cmd>lua vim.lsp.buf.workspace_symbol()<cr>", "workspace-symbols" },
+	["lL"] = { "<cmd>lua vim.lsp.codelens.run()<cr>", "code-lens-run" },
+
+	["le"] = { name = "+errors" },
+	["led"] = { "<cmd>lua vim.diagnostic.show(nil, 0, nil, nil)<cr>", "document-diagnostics" },
+	["lew"] = { "<cmd>lua vim.diagnostic.show(nil, nil, nil, nil)<cr>", "workspace-diagnostics" },
 
 	-- Git
 	["g"] = { name = "+git" },
@@ -124,16 +129,8 @@ whichkey.register({
 	["gr"] = { "<cmd>Gitsigns reset_hunk<cr>", "reset-hunk" },
 	["gR"] = { "<cmd>Gitsigns reset_buffer<cr>", "reset-buffer" },
 	["gb"] = { "<cmd>Gitsigns blame_line<cr>", "blame-line" },
-
-	-- LSP Errors
-	["e"] = { name = "+errors" },
-	["ed"] = { "<cmd>Telescope lsp_document_diagnostics<cr>", "document-diagnostics" },
-	["ew"] = { "<cmd>Telescope lsp_workspace_diagnostics<cr>", "workspace-diagnostics" },
-
-	-- Searching
-	["/"] = { name = "+search" },
-	["/d"] = { "<cmd>Telescope lsp_document_symbols<cr>", "document-symbols" },
-	["/w"] = { "<cmd>Telescope lsp_dynamic_workspace_symbols<cr>", "workspace-symbols" },
+	["g["] = { "<cmd>diffget LOCAL<cr>", "diffget-LOCAL" },
+	["g]"] = { "<cmd>diffget REMOTE<cr>", "diffget-REMOTE" },
 }, {
 	prefix = "<leader>",
 })

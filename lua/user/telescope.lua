@@ -3,80 +3,42 @@ local telescope = require("telescope")
 
 telescope.setup({
 	defaults = {
-		file_ignore_patterns = {
-			"node_modules",
-			"external",
-			"CMakeFiles",
-			"build",
-			"dep",
-			".git",
-		},
-		layout_config = {
-			cursor = {
-				preview_width = 0.5,
-			},
-		},
+		layout_strategy = "bottom_pane",
+		layout_config = { height = 0.33, prompt_position = "bottom" },
 		mappings = {
 			i = {
 				["<esc>"] = actions.close,
+				["?"] = actions.which_key,
 			},
 		},
 	},
 	pickers = {
-		file_browser = {
-			theme = "ivy",
-		},
-		oldfiles = {
-			theme = "ivy",
-		},
-		find_files = {
-			theme = "ivy",
-		},
 		buffers = {
-			theme = "ivy",
-		},
-		lsp_references = {
-			theme = "ivy",
-		},
-		lsp_definitions = {
-			theme = "ivy",
-		},
-		lsp_implementations = {
-			theme = "ivy",
-		},
-		lsp_code_actions = {
-			theme = "ivy",
-			previewer = false,
-		},
-		lsp_document_diagnostics = {
-			theme = "ivy",
-		},
-		lsp_workspace_diagnostics = {
-			theme = "ivy",
-		},
-		lsp_document_symbols = {
-			theme = "ivy",
-		},
-		lsp_dynamic_workspace_symbols = {
-			theme = "ivy",
+			ignore_current_buffer = true,
+			sort_lastused = true,
+			mappings = {
+				i = {
+					["<C-d>"] = actions.delete_buffer,
+				},
+			},
 		},
 	},
 	extensions = {
 		file_browser = {
-			theme = "ivy",
-			mappings = {
-				["i"] = {
-					-- your custom insert mode mappings
-				},
-				["n"] = {
-					-- your custom normal mode mappings
-				},
-			},
+			hijack_netrw = true,
+		},
+		fzf = {
+			fuzzy = true, -- false will only do exact matching
+			override_generic_sorter = true, -- override the generic sorter
+			override_file_sorter = true, -- override the file sorter
+			case_mode = "smart_case", -- or "ignore_case" or "respect_case"
+			-- the default case_mode is "smart_case"
 		},
 	},
 })
 
 telescope.load_extension("file_browser")
+telescope.load_extension("fzf")
 
 vim.api.nvim_exec(
 	[[
